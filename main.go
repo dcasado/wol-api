@@ -15,9 +15,6 @@ const (
 	listenAddressEnvVariable = "LISTEN_ADDRESS"
 	listenPortEnvVariable    = "LISTEN_PORT"
 
-	wolEndpoint    = "/wol"
-	healthEndpoint = "/health"
-
 	// Only 48-bit MACs are allowed
 	macLenth = 6
 )
@@ -33,8 +30,8 @@ func main() {
 	log.Printf("Starting server listening on %s:%s", listenAddress, listenPort)
 
 	serveMux := http.NewServeMux()
-	serveMux.HandleFunc(wolEndpoint, handleWOL)
-	serveMux.HandleFunc(healthEndpoint, handleHealth)
+	serveMux.HandleFunc("POST /wol", handleWOL)
+	serveMux.HandleFunc("GET /health", handleHealth)
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf("%s:%s", listenAddress, listenPort),
@@ -64,11 +61,6 @@ func getListenPortEnvVariable() string {
 }
 
 func handleWOL(responseWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodPost {
-		http.Error(responseWriter, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return
-	}
-
 	var b WOLBody
 
 	decoder := json.NewDecoder(request.Body)
@@ -112,15 +104,9 @@ func handleWOL(responseWriter http.ResponseWriter, request *http.Request) {
 	responseWriter.WriteHeader(http.StatusOK)
 	responseWriter.Header().Set("Content-Type", "application/text")
 	responseWriter.Write([]byte("Ok"))
-
 }
 
 func handleHealth(responseWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodGet {
-		http.Error(responseWriter, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return
-	}
-
 	responseWriter.WriteHeader(http.StatusOK)
 	responseWriter.Header().Set("Content-Type", "application/text")
 	responseWriter.Write([]byte("Ok"))

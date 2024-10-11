@@ -1,3 +1,3 @@
 module github.com/dcasado/wol-api
 
-go 1.19
+go 1.23
